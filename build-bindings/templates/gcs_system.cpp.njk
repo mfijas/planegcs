@@ -26,6 +26,25 @@
 using namespace GCS;
 using namespace std;
 
+// Positions in all_params of each pointer in params. A free function, so the
+// bindings generator (which reads class methods) doesn't try to expose it.
+static vector<int> param_indices(const vector<double *> &all_params, const vector<double *> &params)
+{
+    vector<int> indices;
+    for (double *param : params)
+    {
+        for (int i = 0; i < all_params.size(); ++i)
+        {
+            if (all_params[i] == param)
+            {
+                indices.push_back(i);
+                break;
+            }
+        }
+    }
+    return indices;
+}
+
 class GcsSystem : System
 {
     public:
@@ -173,6 +192,31 @@ class GcsSystem : System
             vector<int> partially_redundant;
             getPartiallyRedundant(partially_redundant);
             return partially_redundant;
+        }
+
+        // Indices into p_params of the parameters that can still move
+        // (FreeCAD's dependent parameters), as found by the last diagnosis.
+        vector<int> get_dependent_params()
+        {
+            VEC_pD dependent;
+            getDependentParams(dependent);
+            return param_indices(p_params, dependent);
+        }
+
+        // One group per degree of freedom: the parameters that move with it.
+        int get_dependent_params_group_count()
+        {
+            vector<vector<double *>> groups;
+            getDependentParamsGroups(groups);
+            return groups.size();
+        }
+
+        // The parameters of group i (see above), as p_params indices.
+        vector<int> get_dependent_params_group(int i)
+        {
+            vector<vector<double *>> groups;
+            getDependentParamsGroups(groups);
+            return param_indices(p_params, groups.at(i));
         }
 
         void clear_by_id(int id)
@@ -406,6 +450,9 @@ EMSCRIPTEN_BINDINGS(module) {
         .function("get_conflicting", &GcsSystem::get_conflicting)
         .function("get_redundant", &GcsSystem::get_redundant)
         .function("get_partially_redundant", &GcsSystem::get_partially_redundant)
+        .function("get_dependent_params", &GcsSystem::get_dependent_params)
+        .function("get_dependent_params_group_count", &GcsSystem::get_dependent_params_group_count)
+        .function("get_dependent_params_group", &GcsSystem::get_dependent_params_group)
         .function("has_conflicting", &GcsSystem::has_conflicting)
         .function("has_redundant", &GcsSystem::has_redundant)
         .function("has_partially_redundant", &GcsSystem::has_partially_redundant)

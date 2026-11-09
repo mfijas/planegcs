@@ -115,6 +115,10 @@ private:
     // This is a map of primary and secondary identifiers that are found dependent by the solver
     // GCS ignores from a type point
     std::vector<std::vector<double*>> pDependentParametersGroups;
+    // How far each parameter in pDependentParametersGroups moves per unit of the group's
+    // degree of freedom, to first order: the free parameter itself 1, the others the null-space
+    // coefficients from the QR decomposition. Same shape as pDependentParametersGroups.
+    std::vector<std::vector<double>> pDependentParametersGroupsCoefficients;
 
     std::vector<Constraint*> clist;
     std::map<Constraint*, VEC_pD> c2p;                // constraint to parameter adjacency list
@@ -593,6 +597,11 @@ public:
     getDependentParamsGroups(std::vector<std::vector<double*>>& pdependentparametergroups) const
     {
         pdependentparametergroups = pDependentParametersGroups;
+    }
+    void getDependentParamsGroupsCoefficients(
+        std::vector<std::vector<double>>& coefficients) const
+    {
+        coefficients = pDependentParametersGroupsCoefficients;
     }
     bool isEmptyDiagnoseMatrix() const
     {

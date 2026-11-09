@@ -219,6 +219,26 @@ class GcsSystem : System
             return param_indices(p_params, groups.at(i));
         }
 
+        // How far each parameter of group i moves (same order as
+        // get_dependent_params_group(i)) when the group's degree of freedom
+        // moves its free parameter by 1. First order only.
+        vector<double> get_dependent_params_group_coefficients(int i)
+        {
+            vector<vector<double>> coefficients;
+            getDependentParamsGroupsCoefficients(coefficients);
+            return coefficients.at(i);
+        }
+
+        // Runs the diagnosis again at the current parameter values, such as a
+        // solution after apply_solution(), replacing the last one: degrees of
+        // freedom, conflicting and redundant constraints, dependent parameters.
+        // Returns the degrees of freedom, or -1 before the first solve.
+        int diagnose_current()
+        {
+            invalidatedDiagnosis();
+            return diagnose();
+        }
+
         void clear_by_id(int id)
         {
             clearByTag(id);
@@ -453,6 +473,8 @@ EMSCRIPTEN_BINDINGS(module) {
         .function("get_dependent_params", &GcsSystem::get_dependent_params)
         .function("get_dependent_params_group_count", &GcsSystem::get_dependent_params_group_count)
         .function("get_dependent_params_group", &GcsSystem::get_dependent_params_group)
+        .function("get_dependent_params_group_coefficients", &GcsSystem::get_dependent_params_group_coefficients)
+        .function("diagnose_current", &GcsSystem::diagnose_current)
         .function("has_conflicting", &GcsSystem::has_conflicting)
         .function("has_redundant", &GcsSystem::has_redundant)
         .function("has_partially_redundant", &GcsSystem::has_partially_redundant)

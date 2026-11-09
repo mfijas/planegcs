@@ -514,6 +514,7 @@ void System::clear()
     pIndex.clear();
     pDependentParameters.clear();
     pDependentParametersGroups.clear();
+    pDependentParametersGroupsCoefficients.clear();
     hasUnknowns = false;
     hasDiagnosis = false;
 
@@ -536,6 +537,7 @@ void System::invalidatedDiagnosis()
     hasDiagnosis = false;
     pDependentParameters.clear();
     pDependentParametersGroups.clear();
+    pDependentParametersGroupsCoefficients.clear();
 }
 
 void System::clearByTag(int tagId)
@@ -5371,6 +5373,7 @@ void System::identifyDependentParameters(T& qrJ,
 #endif
 
     pDependentParametersGroups.resize(qrJ.cols() - rank);
+    pDependentParametersGroupsCoefficients.resize(qrJ.cols() - rank);
     for (int j = rank; j < qrJ.cols(); j++) {
         for (int row = 0; row < rank; row++) {
             if (fabs(Rparams(row, j)) > 1e-10) {
@@ -5378,12 +5381,17 @@ void System::identifyDependentParameters(T& qrJ,
 
                 pDependentParametersGroups[j - rank].push_back(pdiagnoselist[origCol]);
                 pDependentParameters.push_back(pdiagnoselist[origCol]);
+                // Rparams is diagonal over its first `rank` columns after the elimination
+                // above, so with the free parameter j moving by 1, this one moves by:
+                pDependentParametersGroupsCoefficients[j - rank].push_back(-Rparams(row, j)
+                                                                           / Rparams(row, row));
             }
         }
         int origCol = qrJ.colsPermutation().indices()[j];
 
         pDependentParametersGroups[j - rank].push_back(pdiagnoselist[origCol]);
         pDependentParameters.push_back(pdiagnoselist[origCol]);
+        pDependentParametersGroupsCoefficients[j - rank].push_back(1.0);
     }
 
 #ifdef _GCS_DEBUG

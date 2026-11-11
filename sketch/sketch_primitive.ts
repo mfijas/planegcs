@@ -40,11 +40,15 @@ export interface SketchCircle extends Id {
 	type: 'circle';
 	c_id: oid;
 	radius: number;
+	/** Pushes the radius as a fixed parameter, not an unknown. Fix the centre point too for a circle that can't move. */
+	fixed?: boolean;
 }
 export interface SketchArc extends Id, IArc {
 	type: 'arc';
 	c_id: oid;
 	radius: number;
+	/** Pushes the angles and radius as fixed parameters, not unknowns. Fix the centre and end points too for an arc that can't move. */
+	fixed?: boolean;
 }
 
 export interface SketchEllipse extends Id {

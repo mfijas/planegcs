@@ -104,6 +104,27 @@ describe("basic: gcs_wrapper", () => {
         expect(gcs.push_p_param).toHaveBeenCalledTimes(3 * 2 + 3);
     });
 
+    it("pushes a fixed circle's radius as fixed", () => {
+        gcs_wrapper.push_primitive({type: 'point', id: '1', x: 0, y: 0, fixed: true});
+        gcs_wrapper.push_primitive({type: 'circle', id: '2', c_id: '1', radius: 3, fixed: true});
+        expect(gcs.push_p_param).toHaveBeenNthCalledWith(3, 3, true)
+    });
+
+    it("pushes a fixed arc's angles and radius as fixed", () => {
+        gcs_wrapper.push_primitive({type: 'point', id: '1', x: 0, y: 0, fixed: true});
+        gcs_wrapper.push_primitive({type: 'point', id: '2', x: 1, y: 0, fixed: true});
+        gcs_wrapper.push_primitive({type: 'point', id: '3', x: 0, y: 1, fixed: true});
+
+        const arc = { delete: vi.fn() };
+        vi.spyOn(gcs, 'make_arc').mockReturnValueOnce(arc);
+
+        gcs_wrapper.push_primitive({type: 'arc', id: '4', c_id: '1', start_id: '2', end_id: '3', start_angle: 0, end_angle: Math.PI / 2, radius: 1, fixed: true});
+
+        expect(gcs.push_p_param).toHaveBeenNthCalledWith(7, 0, true)
+        expect(gcs.push_p_param).toHaveBeenNthCalledWith(8, Math.PI / 2, true)
+        expect(gcs.push_p_param).toHaveBeenNthCalledWith(9, 1, true)
+    });
+
     it("calls add_constraint_equal method when adding an equal constraint", () => {
         const o1_p1_addr = gcs.params_size();
         gcs_wrapper.push_primitive({type: 'point', id: '1', x: 0, y: 0, fixed: false});

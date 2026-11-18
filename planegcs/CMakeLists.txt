@@ -62,5 +62,6 @@ target_link_options(planegcs PRIVATE
     -sMALLOC=emmalloc
     -sNO_FILESYSTEM=1
     -sSTACK_SIZE=5MB
+    -sALLOW_MEMORY_GROWTH=1
     -sEMBIND_AOT=1
 )
